@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<title>Currencies</title>
+	<link rel="manifest" href="/manifest.json">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<link rel="icon" type="image/png" sizes="512x512"  href="/android-icon-512x512.png">
+	<link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+	<meta name="theme-color" content="#ffffff">
+
+
+	<style>
+		@font-face {
+			font-family: 'Akzidenz-Grotesk Pro Cnd';
+			src: url('AkzidenzGroteskPro-Cn.eot');
+			src: local('Akzidenz-Grotesk Pro Cnd'), local('AkzidenzGroteskPro-Cn'),
+				url('/fonts/AkzidenzGroteskPro-Cn.woff') format('woff'),
+				url('/fonts/AkzidenzGroteskPro-Cn.ttf') format('truetype');
+			font-weight: normal;
+			font-style: normal;
+		}
+
+		body {
+			margin: 0;
+			padding: 0;
+			padding-top: 70px;
+
+			color: #000;
+			font-family: 'Akzidenz-Grotesk Pro Cnd', sans-serif;
+			font-size: 20px;
+
+		}
+
+		button:active, button:focus {
+		  outline: none !important;
+		}
+
+		button::-moz-focus-inner {
+		  border: 0 !important;
+		}
+
+		.bg {
+			position: fixed;
+			top: 0;
+			left: 0;
+
+			width: 100vw;
+			height: 100vh;
+		}
+
+		.header {
+			position: fixed;
+			top: 0;
+			left: 0;
+			z-index: 2;
+
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding: 0 15px;
+			height: 70px;
+			width: 100%;
+			box-sizing: border-box;
+			
+			background-color: #FFF;
+			border-bottom: 5px solid #C4C4C4;
+		}
+
+		.header__thanos {
+			display: none;
+		}
+
+		.header__update {
+			padding: 5px;
+			width: 120px;
+
+			font: inherit;
+			font-size: 20px;
+			color: inherit;
+
+			background-color: transparent;
+			border: 2px solid #000;
+			border-radius: 20px;
+		}
+
+		.header__update:disabled {
+			opacity: 0.5;
+		}	
+
+		.header__time {
+			position: relative;
+
+			padding-left: 25px;
+			padding-right: 20px;
+			width: 75px;
+
+			font-size: 18px;
+			text-align: right;
+		}
+
+		.header__time::after {
+			content: '';
+
+			position: absolute;
+			top: 50%;
+			right: -2px;
+
+			display: block;
+			width: 12px;
+			height: 12px;
+			margin-top: -6px;
+
+			border-radius: 50%;
+			background-color: green;
+		}
+
+		.header__time--offline::after {
+			background-color: red;
+		}
+
+		.currency {
+			position: relative;
+			z-index: 1;
+
+			padding: 0 15px;
+			margin: 0;
+
+			list-style: none;
+		}
+
+		.currency__item {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding: 10px 0; 
+			padding-left: 55px;
+			padding-bottom: 10px;
+			min-height: 50px;
+
+			background-repeat: no-repeat;
+			background-position: 0 50%;
+
+			overflow: hidden;
+
+			transition: all 1s linear;
+		}
+
+		.currency__item--hidden {
+			padding: 0;
+			min-height: 0;
+			height: 0;
+
+			filter: blur(10px) grayscale(100%);
+			opacity: 0;
+		}
+
+		.currency__block {
+			display: flex;
+			flex-direction: column;
+		}
+
+		.currency__name {
+			font-size: 16px;
+		}
+
+		.currency__value {
+			width: 120px;
+			padding: 5px;
+
+			font-family: inherit;
+			font-size: 24px;
+			text-align: right;
+			color: inherit;
+
+			border: none;
+			border-bottom: 1px solid #bcbcbc;
+			background-color: transparent;
+		}
+
+		.currency__value:focus {
+			border: 1px solid #bcbcbc;
+			outline: none;
+		}
+
+		.options {
+			position: fixed;
+			bottom: 0;
+			right: 0;
+			z-index: 2;
+
+			width: 100vw;
+
+			text-align: center;
+		}
+
+		.options__wrapper {
+			display: none;
+			padding: 10px 40px;
+
+			background-color: #FFF;
+			border-top: 5px solid #C4C4C4;
+		}
+
+		.none {
+			display: none;
+		}
+
+		.options__open {
+			display: block;
+			width: 40px;
+			height: 40px;
+			margin-left: auto;
+			margin-bottom: 20px;
+			margin-right: 20px;
+			border-radius: 15px;
+			background-color: #C4C4C4;
+			background-image: url(img/settings-work-tool.svg);
+			background-repeat: no-repeat;
+			background-position: center;
+			background-size: 30px auto;
+		}
+
+		#options-open:checked + .options__open {
+			position: relative;
+			background-image: none;
+		}
+
+		#options-open:checked + .options__open::before {
+			content: '';
+
+			position: absolute;
+			top: 50%;
+			left: 50%;
+
+			display: block;
+			width: 4px;
+			height: 35px;
+
+			border-radius: 2px;
+
+			background-color: #000;
+			transform: translate(-50%,-50%) rotate(-45deg);
+		}
+
+		#options-open:checked + .options__open::after {
+			content: '';
+
+			position: absolute;
+			top: 50%;
+			left: 50%;
+
+			display: block;
+			width: 4px;
+			height: 35px;
+
+			border-radius: 2px;
+
+			background-color: #000;
+			transform: translate(-50%,-50%) rotate(45deg);
+		}
+
+		#options-open:checked ~ .options__wrapper {
+			display: block;
+		}
+
+		.options__title {
+			margin: 0;
+			margin-bottom: 10px;
+
+			text-align: center;
+			font-size: 20px;
+			color: #000;
+		}
+
+		.options__title--small {
+			font-size: 16px;
+			text-align: left;
+		}
+
+		.options__row {
+			margin-bottom: 10px;
+
+			text-align: center;
+		}
+
+		.options__row--number {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+		}
+
+		.options__none {
+			display: none;
+		}
+
+		.options__light {
+			display: inline-block;
+			width: 80px;
+			margin-right: 20px;
+			padding: 5px 20px;
+			box-sizing: border-box;
+
+			font-family: inherit;
+			font-size: 16px;
+			color: #000;
+
+			background-color: #FFF;
+			border: 1px solid #000;
+			border-radius: 5px;
+		}
+
+		#theme-light:checked + .options__light {
+			transform: scale(1.4);
+		}
+
+		.options__thanos {
+			display: inline-block;
+			width: 80px;
+			padding: 5px 20px;
+			box-sizing: border-box;
+
+			font-family: inherit;
+			font-size: 16px;
+			color: #FFF;
+
+			background-color: #000;
+			border-radius: 5px;
+		}
+
+		#theme-thanos:checked + .options__thanos {
+			transform: scale(1.4);
+		}
+
+		.options__number {
+			display: inline-block;
+			padding: 5px;
+			margin-bottom: 10px;
+			width: 50px;
+
+			font-family: inherit;
+			font-size: 24px;
+			text-align: center;
+
+			border: none;
+			border-bottom: 1px solid #000;
+		}
+
+		.options__number:focus {
+			border: 1px solid #000;
+			outline: none;
+		}
+
+		.options__number::-webkit-outer-spin-button,
+		.options__number::-webkit-inner-spin-button {
+		    -webkit-appearance: none;
+		}
+
+		.options__number[type='number'] {
+		    -moz-appearance: textfield;
+		}
+
+		.options__number:invalid {
+			border-color: red;
+		}
+
+
+		.options__change {
+			display: block;
+			width: 120px;
+			margin: 0 auto;
+			margin-top: 20px;
+			padding: 5px 20px;
+
+			font-family: inherit;
+			font-size: 22px;
+
+			background-color: transparent;
+			border: 1px solid #000;
+		}
+
+		.options__link {
+			font-family: inherit;
+			color: #000;
+		}
+
+		.poppup {
+			position: fixed;
+			top: 0;
+			left: 0;
+			z-index: 10;
+			box-sizing: border-box;
+
+			display: none;
+			width:  100vw;
+			height: 100vh;
+
+			background-color: rgba(0,0,0,.5);
+		}
+
+		.poppup--show {
+			display: block;
+		}
+
+		.poppup__text {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 60vw;
+			height: 60vh;
+			margin: 0;
+			padding: 30px;
+
+			color: red;
+			font-size: 28px;
+			text-align: center;
+
+			background-color: #FFF;
+			border: 3px solid #C4C4C4;
+			border-radius: 20px;
+
+			transform: translate(-50%,-50%);
+		}
+
+
+
+		/*Thanos theme*/
+		.thanos {
+			color: #FFF;
+		}
+
+		.thanos .header{
+			border: none;
+			background:
+			linear-gradient(27deg, #151515 2.5px, transparent 2.5px) 0 2.5px,
+			linear-gradient(207deg, #151515 2.5px, transparent 2.5px) 5px 0px,
+			linear-gradient(27deg, #222 2.5px, transparent 2.5px) 0px 5px,
+			linear-gradient(207deg, #222 2.5px, transparent 2.5px) 5px 2.5px,
+			linear-gradient(90deg, #1b1b1b 5px, transparent 5px),
+			linear-gradient(#1d1d1d 25%, #1a1a1a 25%, #1a1a1a 50%, transparent 50%, transparent 75%, #242424 75%, #242424);
+			background-color: #131313;
+			background-size: 10px 10px;
+		}
+
+		.thanos .header__update {
+			border-color: #FFF;
+		}
+
+		.thanos .header__thanos {
+			position: relative;
+
+			display: block;
+			width: 50px;
+			height: 50px;
+			padding: 0;
+
+			background-color: transparent;
+			border: none;
+			background-image: url(/img/thanos.png);
+			background-repeat: no-repeat;
+			background-position: center;
+		}
+
+		.thanos .header__thanos--fist {
+			background-image: url(/img/thanos-fist.png);
+		}
+
+		.thanos .header__thanos--fist::before {
+			opacity: 1;
+		}
+
+		.thanos .bg {
+			background-image: url(img/bg.jpg);
+			background-repeat: no-repeat;
+			background-position: center;
+			background-size: cover;
+		}
+
+	</style>
+</head>
+<body>
+	<header class="header">
+		<button class="header__update" id="update">Обновить</button>
+		<button class="header__thanos" id="thanos"></button>
+		<p class="header__time" id="time"></p>
+	</header>
+
+	<div class="bg"></div>
+
+	<div class="options">
+		<input type="checkbox" class="none" id="options-open">
+		<label class="options__open" for="options-open"></label>
+		<div class="options__wrapper">
+			<p class="options__title">Тема</p>
+			<div class="options__row">
+				<input class="options__none" type="radio" name="theme" value="light" id="theme-light" checked>
+				<label class="options__light" for="theme-light">Светлая</label>
+				<input class="options__none" type="radio" name="theme" value="thanos" id="theme-thanos">
+				<label class="options__thanos" for="theme-thanos">Танос</label>
+			</div>
+			<div class="options__row options__row--number">
+				<label class="options__title options__title--small" for="max-number">Максимальное количество цифр<br>(минимум 8, максимум 12)</label>
+				<input class="options__number" type="number" id="max-number" value="10" max="12" min="8" step="1">
+			</div>
+			<div class="options__row options__row--number">
+				<label class="options__title options__title--small" for="decimal-max-number">Количество цифр после запятой<br>(минимум 2, максимум 6)</label>
+				<input class="options__number" type="number" id="decimal-max-number" value="5"  max="6" min="2" step="1">
+			</div>
+			<a class="options__link" href="https://github.com/ir-shirinov/Currencies">Ссылка на репозиторий</a>
+			
+			<button class="options__change" id="save-options">Сохранить</button>
+		</div>
+	</div>
+	
+	<ul class="currency">
+		
+	</ul>
+
+	<div class="poppup">
+		<p class="poppup__text">
+			Нет сети и сохраненных данных, ждите пока появится сеть.
+		</p>
+	</div>
+
+
+
+	<script>
+		const currencyElement = document.querySelector('.currency');
+
+		//Initialization APP START
+		//Функция обеспечивающая запуск приложения, если не было инета
+		async function onAppOnline() {
+			const poppupError = document.querySelector('.poppup');
+			await loadCurrency();
+			poppupError.classList.remove('poppup--show');
+			updateViewTemplate();
+			updateViewCurrencies();
+			window.removeEventListener("online", onAppOnline);
+		};
+
+		
+
+		//Запуск приложения
+		window.addEventListener("DOMContentLoaded", async function() {
+			//Если есть сохраненные настройки, получаем их. Если их нет, берем значения по умолчанию из верстки.
+			if (localStorage.getItem('optionsUser') !== null) {
+				window.optionsUser = JSON.parse(localStorage.getItem('optionsUser'), function(key,value) {
+					if ((key === 'maxNumber') || (key === 'maxDecimalNumber')) {
+						return Number(value);
+					};
+					return value;
+				});
+			} else {
+				window.optionsUser = {
+					'theme' : document.querySelector('input[name="theme"]:checked').value,
+					'maxNumber' : Number(document.querySelector('#max-number').value),
+					'maxDecimalNumber' : Number(document.querySelector('#decimal-max-number').value)
+				};
+				localStorage.setItem('optionsUser', JSON.stringify(window.optionsUser));
+			};
+			initializationOptions();
+
+			//Если есть интернет загружаем свежие данные, если нет интернета загружаем последние сохраненные данные. Если таких данных нет, показываем сообщение об ошибки и добавляем событие на появлении интернета.
+			if (navigator.onLine) {
+				await loadCurrency();
+			} else {
+				document.querySelector('.header__time').classList.add('header__time--offline');
+				document.querySelector('#update').disabled = true;
+				if (localStorage.getItem('dataCurrensy') !== null) {
+					window.dataCurrensy = JSON.parse(localStorage.getItem('dataCurrensy'),
+						function(key,value){
+							if ((key === 'currentValue') || (key === 'defaultValue')) {
+								return Number(value);
+							};
+							return value;
+						}
+					);
+				} else {
+					document.querySelector('.poppup').classList.add('poppup--show');
+					window.addEventListener("online", onAppOnline);
+					return;
+				};
+			};
+			updateViewTemplate();
+			updateViewCurrencies();
+		}); 
+
+		//Сохранение опции пользователя в интерфейс и запуск темы
+		function initializationOptions() {
+			const selectedTheme = document.querySelector(`#theme-${window.optionsUser.theme}`).value;
+			const fieldMaxNumber = Number(document.querySelector('#max-number').value);
+			const failedMaxDecimalNumber = Number(document.querySelector('#decimal-max-number').value);
+			selectedTheme.checked = true;
+			fieldMaxNumber.value = window.optionsUser.maxNumber;
+			failedMaxDecimalNumber.value = window.optionsUser.maxDecimalNumber;
+			initializationTheme();
+		};
+		//Initialization APP END
+
+		// View
+		//Уведомляем значком об отключении интернета и запрещаем обновлять данные
+		window.addEventListener("offline", function() {
+			document.querySelector('.header__time').classList.add('header__time--offline');
+			document.querySelector('#update').disabled = true;
+		});
+
+		//Уведомляем значком об подключении интернета и позволяем обновлять данные
+		window.addEventListener("online", function() {
+			document.querySelector('.header__time').classList.remove('header__time--offline');
+			document.querySelector('#update').disabled = false;
+		});
+
+
+		//Функция готовящая шаблон для данных
+		function updateViewTemplate() {
+			document.querySelector('#time').textContent = dataCurrensy['dateCurrency'];
+			const currencies = window.dataCurrensy["currencies"];
+			let htmlCurrencies = '';
+
+			for (const key of Object.keys(currencies)) {
+				const valueCurrence = currencies[key]["currentValue"];
+				htmlCurrencies += `<li class="currency__item" style="background-image: url(/img/flags/${currencies[key]["nameFileFlag"]})">`;
+			    htmlCurrencies += `<div class="currency__block"><span class="currency__code">${key}</span>`;
+			    htmlCurrencies += `<span class="currency__name">${currencies[key]["nameRUcurrency"]}</span></div>`;
+			    htmlCurrencies += `<input class="currency__value" type="text" id="${key}" value="">`;
+			    htmlCurrencies += `</li>`;
+			};
+			currencyElement.innerHTML = htmlCurrencies;
+		};
+
+		//Функция пересчета валют с учетом настроек пользователя - максимальное количество символов и максимальное количество символов после запятой
+		function updateViewCurrencies() {
+
+			for (const key of Object.keys(window.dataCurrensy.currencies)) {
+				const inputCurrency = document.querySelector(`#${key}`);
+				const maxNumber = window.optionsUser.maxNumber;
+				const maxDecimalNumber = window.optionsUser.maxDecimalNumber;
+
+				let newCurrencyValue  = (window.dataCurrensy.currencies[key]["currentValue"]).toFixed(window.optionsUser.maxDecimalNumber) * 1;
+
+				newCurrencyValue = String(newCurrencyValue).replace(".",",");
+
+				if (newCurrencyValue.search(',') !== -1) {
+
+					if (newCurrencyValue.length > (maxNumber + 1)) {
+						newCurrencyValue = 'BIG NUMBER';
+
+					};
+					
+				} else if (newCurrencyValue.length > maxNumber) {
+					newCurrencyValue = 'BIG NUMBER';
+				};
+
+				inputCurrency.value = newCurrencyValue;
+			};
+		};
+
+		//Инициализация темы
+		function initializationTheme() {
+			if (window.optionsUser.theme === 'thanos') {
+				document.body.classList.add('thanos');
+			} else {
+				document.body.classList.remove('thanos');
+			};
+		};
+		// View
+
+		//Model
+		//Функция получения данных и запись их в localStorage(для получения информации в случае отсутствия интернета) и window(для текущей работы с данными)
+		async function loadCurrency() {
+			const response = await fetch('/data.php');
+			const jsonResponse = await response.text();
+			const objectResponse = JSON.parse(jsonResponse, function(key,value){
+				if ((key === 'currentValue') || (key === 'defaultValue')) {
+					return Number(value);
+				};
+				return value;
+			});
+
+			const timeNow = new Date();
+			const hourNow = timeNow.getHours() < 10 ? '0' + timeNow.getHours() : '' + timeNow.getHours();
+			const minuteNow = timeNow.getMinutes() < 10 ? '0' + timeNow.getMinutes() : '' + timeNow.getMinutes();
+			const secondNow = timeNow.getSeconds() < 10 ? '0' + timeNow.getSeconds() : '' + timeNow.getSeconds();
+			objectResponse['dateCurrency'] = `${objectResponse['dateCurrency']} ${hourNow}:${minuteNow}:${secondNow}`;
+			window.dataCurrensy = objectResponse;
+			localStorage.setItem('dataCurrensy', JSON.stringify(window.dataCurrensy));
+		};
+
+		//Вспомогательная функия проверки строки является ли она числом
+		function isNumeric(n) {
+		  	return !isNaN(parseFloat(n)) && isFinite(n);
+		}
+
+		//Валидация введенных данных. Проверяем все ли символы являютя числами и разделителями(точкой и запятой), заменяем точки на запятые, удаляем лишние запятые, если их больше двух
+		function validateData(element) {
+			const maxNumber = window.optionsUser.maxNumber;
+			let currencySymbols = element.value.split('').reverse();
+			let isOnePoint = true;
+			currencySymbols = currencySymbols.filter(function(item) {
+				if (isNumeric(item)) {
+ 					return true;
+				} else if ( ((item === ',') || (item === '.')) && isOnePoint ) {
+					isOnePoint = false;
+					return true;
+				};
+				return false; 
+			});
+			currencySymbols = currencySymbols.reverse().join('').replace('.',',');
+			element.value = currencySymbols;
+		}
+		
+			
+	
+		//Подсчет стоимости валют и обновлении данных
+		function updateData (evt) {
+			const fieldCurrency = evt.target;
+			validateData(fieldCurrency);
+			const fieldCurrencyValue = fieldCurrency.value;
+			//Если последний символ запятая, то ждем следующего символа
+			if (fieldCurrencyValue[fieldCurrencyValue.length - 1] === ',') {
+				return;
+			};
+
+			if (fieldCurrency.id !== "EUR") {
+				const currencyFocusDefaultValue = window.dataCurrensy["currencies"][fieldCurrency.id]["defaultValue"];
+				const currencyFocusNewValue = fieldCurrency.value.replace(",",".");
+
+				dataCurrensy["currencies"]["EUR"]["currentValue"] = (currencyFocusNewValue/currencyFocusDefaultValue)
+				dataCurrensy["currencies"][fieldCurrency.id]["currentValue"] = parseFloat(fieldCurrency.value.replace(",","."));
+			} else {
+				dataCurrensy["currencies"]["EUR"]["currentValue"] = +(fieldCurrency.value.replace(",","."));
+			};
+ 
+			for (const key in dataCurrensy["currencies"]) {
+				if ((key !== "EUR") && (key !== fieldCurrency.id)) {
+					window.dataCurrensy["currencies"][key]["currentValue"] = (window.dataCurrensy["currencies"][key]["defaultValue"] * window.dataCurrensy["currencies"]["EUR"]["currentValue"])
+				}
+			};
+
+			updateViewCurrencies();
+		}
+		//Model
+
+
+		//Controller START
+		//Событие изменения валюты
+		currencyElement.addEventListener('input', updateData);
+		
+		//Событие обновления информации
+		document.querySelector('#update').addEventListener('click', async function(){
+			document.querySelector('#update').textContent = "Загружаю...";
+			await loadCurrency();
+			updateViewTemplate();
+			updateViewCurrencies();
+			document.querySelector('#update').textContent = "Обновить";	
+		});
+
+		//Событие Таноса
+		document.querySelector('#thanos').addEventListener('click', function(evt) {
+			evt.target.classList.toggle('header__thanos--fist');
+			const currenciesElements = document.querySelectorAll('.currency__item:nth-child(2n)');
+			currenciesElements.forEach(function(item){
+				item.classList.toggle('currency__item--hidden');
+			});
+		});
+
+		//Событие сохранения опций
+		document.querySelector('#save-options').addEventListener('click', function() {
+			window.optionsUser.theme = document.querySelector('input[name="theme"]:checked').value;
+			window.optionsUser.maxNumber = Number(document.querySelector('#max-number').value);
+			window.optionsUser.maxDecimalNumber = Number(document.querySelector('#decimal-max-number').value);
+			initializationTheme();
+			document.querySelector('#options-open').checked = false;
+			localStorage.setItem('optionsUser', JSON.stringify(window.optionsUser));
+			updateViewCurrencies();
+		});
+		//Controller END
+	</script>
+
+
+	<script>
+		if ('serviceWorker' in navigator) {
+		    window.addEventListener('load', function() {
+		        navigator.serviceWorker.register('/sw.js').then(function(registration) {
+		            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+		        }).catch(function(err) {
+		            console.log('ServiceWorker registration failed: ', err);
+		        });
+		    });
+		};
+	</script> 
+
+</body>
+</html>

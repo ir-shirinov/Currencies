@@ -506,12 +506,12 @@
 				<label class="options__thanos" for="theme-thanos">Танос</label>
 			</div>
 			<div class="options__row options__row--number">
-				<label class="options__title options__title--small" for="max-number">Максимальное количество цифр<br>(минимум 8, максимум 12)</label>
-				<input class="options__number" type="number" id="max-number" value="10" max="12" min="8" step="1">
+				<label class="options__title options__title--small" for="max-number">Максимальное количество цифр<br>(минимум 5, максимум 12)</label>
+				<input class="options__number" type="number" id="max-number" value="10" max="12" min="5" step="1">
 			</div>
 			<div class="options__row options__row--number">
-				<label class="options__title options__title--small" for="decimal-max-number">Количество цифр после запятой<br>(минимум 2, максимум 6)</label>
-				<input class="options__number" type="number" id="decimal-max-number" value="5"  max="6" min="2" step="1">
+				<label class="options__title options__title--small" for="decimal-max-number">Количество цифр после запятой<br>(минимум 0, максимум 6)</label>
+				<input class="options__number" type="number" id="decimal-max-number" value="5"  max="6" min="0" step="1">
 			</div>
 			<a class="options__link" href="https://github.com/ir-shirinov/Currencies">Ссылка на репозиторий</a>
 			
@@ -746,6 +746,29 @@
 
 			updateViewCurrencies();
 		}
+
+		//Валидация данных опций
+		function validateDataOption(newMaxNumberField, newMaxDecimalNumberField) {
+			const newMaxNumber = Number(newMaxNumberField.value);
+			const newMaxDecimalNumber = Number(newMaxDecimalNumberField.value);
+
+			if (newMaxNumber > Number(newMaxNumberField.max)) {
+				newMaxNumberField.value = newMaxNumberField.max;
+			} else if (newMaxNumber < Number(newMaxNumberField.min)) {
+				newMaxNumberField.value = newMaxNumberField.min;
+			};
+
+			if (newMaxDecimalNumber > Number(newMaxDecimalNumberField.max)) {
+				newMaxDecimalNumberField.value = newMaxDecimalNumberField.max;
+			} else if (newMaxDecimalNumber < Number(newMaxDecimalNumberField.min)) {
+				newMaxDecimalNumberField.value = newMaxDecimalNumberField.min;
+			};
+
+			if (newMaxDecimalNumber > newMaxNumber) {
+				newMaxNumberField.value = newMaxDecimalNumberField.defaultValue;
+				newMaxNumberField.value = newMaxNumberField.defaultValue;
+			}
+		}
 		//Model
 
 
@@ -774,8 +797,12 @@
 		//Событие сохранения опций
 		document.querySelector('#save-options').addEventListener('click', function() {
 			window.optionsUser.theme = document.querySelector('input[name="theme"]:checked').value;
-			window.optionsUser.maxNumber = Number(document.querySelector('#max-number').value);
-			window.optionsUser.maxDecimalNumber = Number(document.querySelector('#decimal-max-number').value);
+
+			const newMaxNumber = document.querySelector('#max-number');
+			const newMaxDecimalNumber = document.querySelector('#decimal-max-number');
+			validateDataOption(newMaxNumber, newMaxDecimalNumber);
+			window.optionsUser.maxNumber = Number(newMaxNumber.value);
+			window.optionsUser.maxDecimalNumber = Number(newMaxDecimalNumber.value);
 			initializationTheme();
 			document.querySelector('#options-open').checked = false;
 			localStorage.setItem('optionsUser', JSON.stringify(window.optionsUser));
